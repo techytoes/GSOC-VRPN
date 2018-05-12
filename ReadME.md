@@ -8,3 +8,8 @@ This repo contains all my work that I did related to the GSOC project.
 ```
 brew install vrpn
 ```
+To run the example
+```
+g++ test.cpp -lvrpn
+./a.out
+```
