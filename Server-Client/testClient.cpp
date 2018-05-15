@@ -1,33 +1,32 @@
 #include "vrpn_Analog.h"
+#include <vrpn_Text.h> 
 
 #include <iostream>
 using namespace std;
 
 
-void VRPN_CALLBACK handle_analog( void* userData, const vrpn_ANALOGCB a )
+void VRPN_CALLBACK handle_text(void *userdata, const vrpn_TEXTCB t)
 {
- int nbChannels = a.num_channel;
+    const char *name = (const char *)userdata;
 
- cout << "Analog : ";
-
- for( int i=0; i < a.num_channel; i++ )
- {
- cout << a.channel[i] << " ";
- }
-
- cout << endl;
+    // Warnings and errors are printed by the system text printer.
+    if (t.type == vrpn_TEXT_NORMAL) {
+        printf("%s: Text message: %s\n", name, t.message);
+    }
 }
 
 int main(int argc, char* argv[])
-{
- vrpn_Analog_Remote* vrpnAnalog = new vrpn_Analog_Remote("Mouse0@localhost");
+{   
+    //To recieve text from server
+    text = new vrpn_Text_Receiver("Mouse0@localhost");
+    vrpn_Analog_Remote* vrpnAnalog = new vrpn_Analog_Remote("Mouse0@localhost");
 
- vrpnAnalog->register_change_handler( 0, handle_analog );
+    vrpnAnalog->register_change_handler( 0, handle_text );
 
- while(1)
- {
- vrpnAnalog->mainloop();
- }
+    while(1)
+    {
+        vrpnAnalog->mainloop();
+    }
 
- return 0;
+    return 0;
 }
