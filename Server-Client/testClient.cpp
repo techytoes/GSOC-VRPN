@@ -18,14 +18,13 @@ void VRPN_CALLBACK handle_text(void *userdata, const vrpn_TEXTCB t)
 int main(int argc, char* argv[])
 {   
     //To recieve text from server
-    text = new vrpn_Text_Receiver("Mouse0@localhost");
-    vrpn_Analog_Remote* vrpnAnalog = new vrpn_Analog_Remote("Mouse0@localhost");
+    vrpn_Text_Receiver *text = new vrpn_Text_Receiver("Mouse0@localhost");
 
-    vrpnAnalog->register_change_handler( 0, handle_text );
+    text->register_message_handler( 0, handle_text );
 
     while(1)
     {
-        vrpnAnalog->mainloop();
+        text->mainloop();
     }
 
     return 0;
