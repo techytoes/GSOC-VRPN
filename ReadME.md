@@ -13,3 +13,7 @@ To run the example
 $ g++ test.cpp -lvrpn
 $ ./a.out
 ```
+
+# CMAKE-GUI Configuration
+
+![cmake](images/cmake.png)
