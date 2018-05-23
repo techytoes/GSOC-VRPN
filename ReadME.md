@@ -14,6 +14,10 @@ $ g++ test.cpp -lvrpn
 $ ./a.out
 ```
 
+# QtCreator
+
+![cmake](images/plugin.png)
+
 # CMAKE-GUI Configuration
 
 ![cmake](images/cmake.png)
