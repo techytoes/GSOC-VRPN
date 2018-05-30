@@ -54,8 +54,8 @@ protected:
     //void receiveRequest();
 
     static void VRPN_CALLBACK processTextMessage(void *userdata, const vrpn_TEXTCB t);
-    static void VRPN_CALLBACK processButtonMessage(void *userdata, const vrpn_BUTTONCB t);
-    static void VRPN_CALLBACK processTrackerMessage(void *userdata, const vrpn_Tracker t);
+    static void VRPN_CALLBACK processButtonMessage(void *userdata, const vrpn_BUTTONCB b);
+    //static void VRPN_CALLBACK processTrackerMessage(void *userdata, const vrpn_Tracker t);
     //std::string createVRPNMessage(CommunicationSubscriber* subscriber, std::string argument);
     //void processMessage(std::string dataString);
 

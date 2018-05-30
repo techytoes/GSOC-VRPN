@@ -164,22 +164,7 @@ void ServerCommunicationVRPN::receiveData()
    }
 }
 
-void VRPN_CALLBACK ServerCommunicationVRPN::processTextMessage(void *userdata, const vrpn_BUTTONCB b)
-{
-    std::cout << "Button : " << b.button << std::endl;
-    const char *name = (const char *)userdata;
-    if (t.type == vrpn_TEXT_NORMAL)
-    {
-        ArgumentList messageStream;
-        std::string stream = "string:";
-        stream.append(t.message);
-        messageStream.push_back(stream);
-        std::cout << name << " : Text message: " << t.message << std::endl;
-        //process see linefunciton processmessaage of osc
-    }
-}
-
-void VRPN_CALLBACK ServerCommunicationVRPN::processButtonMessage(void *userdata, const vrpn_TEXTCB t)
+void VRPN_CALLBACK ServerCommunicationVRPN::processTextMessage(void *userdata, const vrpn_TEXTCB t)
 {
     std::cout << "Type : " << t.type << std::endl;
     const char *name = (const char *)userdata;
@@ -192,6 +177,11 @@ void VRPN_CALLBACK ServerCommunicationVRPN::processButtonMessage(void *userdata,
         std::cout << name << " : Text message: " << t.message << std::endl;
         //processs see linefunciton processmessaage of osc
     }
+}
+
+void VRPN_CALLBACK ServerCommunicationVRPN::processButtonMessage(void *userdata, const vrpn_BUTTONCB b)
+{
+    std::cout << "Button '" << b.button << "': " << b.state << std::endl;
 }
 
 std::string ServerCommunicationVRPN::getArgumentValue(std::string value)
