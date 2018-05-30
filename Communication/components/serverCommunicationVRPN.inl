@@ -124,41 +124,62 @@ void ServerCommunicationVRPN::sendData()
 
 void ServerCommunicationVRPN::receiveData()
 {
-    std::string address = d_address.getValueString();
-    std::vector<vrpn_Text_Receiver*> receivers;
+   std::string address = d_address.getValueString();
+   std::vector<vrpn_Text_Receiver*> receiversText;
+   std::vector<vrpn_Button_Remote*> receiversButton;
 
-    std::map<std::string, CommunicationSubscriber*> subscribersMap = getSubscribers();
-    if (subscribersMap.size() == 0)
+   std::map<std::string, CommunicationSubscriber*> subscribersMap = getSubscribers();
+   if (subscribersMap.size() == 0)
+   {
+       if (isVerbose())
+           msg_info(this) << "Server Communication VRPN does not have Subscriber";
+       return;
+   }
+   for (std::map<std::string, CommunicationSubscriber*>::iterator it = subscribersMap.begin(); it != subscribersMap.end(); it++)
+   {
+       CommunicationSubscriber* subscriber = it->second;
+
+       //Taking a string in convertng it into char *
+       std::string str = subscriber->getSubject()+"@"+address;
+       const char *device = str.c_str();
+
+       //Recieving text via VRPN
+       vrpn_Text_Receiver *vrpnText = new vrpn_Text_Receiver(device);
+       vrpnText->register_message_handler( (void*)subscriber->getSubject().c_str(), processTextMessage );
+       receiversText.push_back(vrpnText);
+
+       //Receiving Button via VRPN
+       vrpn_Button_Remote *vrpnButton = new vrpn_Button_Remote(device);
+       vrpnButton->register_change_handler( (void*)subscriber->getSubject().c_str(), processButtonMessage);
+       receiversButton.push_back(vrpnButton);
+   }
+
+
+   while(this->m_running)
+   {
+       for(auto rec : receivers )
+       {
+           rec->mainloop();
+       }
+   }
+}
+
+void VRPN_CALLBACK ServerCommunicationVRPN::processTextMessage(void *userdata, const vrpn_BUTTONCB b)
+{
+    std::cout << "Button : " << b.button << std::endl;
+    const char *name = (const char *)userdata;
+    if (t.type == vrpn_TEXT_NORMAL)
     {
-        if (isVerbose())
-            msg_info(this) << "Server Communication VRPN does not have Subscriber";
-        return;
-    }
-    for (std::map<std::string, CommunicationSubscriber*>::iterator it = subscribersMap.begin(); it != subscribersMap.end(); it++)
-    {
-        CommunicationSubscriber* subscriber = it->second;
-
-        //Taking a string in convertng it into char *
-        std::string str = subscriber->getSubject()+"@"+address;
-        const char *device = str.c_str();
-
-        //Recieving text via VRPN
-        vrpn_Text_Receiver *text = new vrpn_Text_Receiver(device);
-        text->register_message_handler( (void*)subscriber->getSubject().c_str(), processTextMessage );
-        receivers.push_back(text);
-    }
-
-
-    while(this->m_running)
-    {
-        for(auto rec : receivers )
-        {
-            rec->mainloop();
-        }
+        ArgumentList messageStream;
+        std::string stream = "string:";
+        stream.append(t.message);
+        messageStream.push_back(stream);
+        std::cout << name << " : Text message: " << t.message << std::endl;
+        //process see linefunciton processmessaage of osc
     }
 }
 
-void VRPN_CALLBACK ServerCommunicationVRPN::processTextMessage(void *userdata, const vrpn_TEXTCB t)
+void VRPN_CALLBACK ServerCommunicationVRPN::processButtonMessage(void *userdata, const vrpn_TEXTCB t)
 {
     std::cout << "Type : " << t.type << std::endl;
     const char *name = (const char *)userdata;
