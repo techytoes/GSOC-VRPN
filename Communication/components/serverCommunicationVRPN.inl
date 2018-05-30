@@ -91,7 +91,7 @@ void ServerCommunicationVRPN::sendData()
     {
         CommunicationSubscriber* subscriber = it->second;
 
-        //Taking a string in convertng it into char *
+        //Taking a string in converting it into char *
         std::string str = subscriber->getSubject()+"@"+address;
         const char *device = str.c_str();
 
@@ -127,6 +127,7 @@ void ServerCommunicationVRPN::receiveData()
    std::string address = d_address.getValueString();
    std::vector<vrpn_Text_Receiver*> receiversText;
    std::vector<vrpn_Button_Remote*> receiversButton;
+   std::vector<vrpn_Tracker_Remote*> receiversTracker;
 
    std::map<std::string, CommunicationSubscriber*> subscribersMap = getSubscribers();
    if (subscribersMap.size() == 0)
@@ -152,6 +153,11 @@ void ServerCommunicationVRPN::receiveData()
        vrpn_Button_Remote *vrpnButton = new vrpn_Button_Remote(device);
        vrpnButton->register_change_handler( (void*)subscriber->getSubject().c_str(), processButtonMessage);
        receiversButton.push_back(vrpnButton);
+
+       //Receiving Button via VRPN
+       vrpn_Tracker_Remote *vrpnTracker = new vrpn_Tracker_Remote(device);
+       vrpnTracker->register_change_handler( (void*)subscriber->getSubject().c_str(), processTrackerMessage);
+       receiversTracker.push_back(vrpnTracker);
    }
 
 
@@ -182,6 +188,11 @@ void VRPN_CALLBACK ServerCommunicationVRPN::processTextMessage(void *userdata, c
 void VRPN_CALLBACK ServerCommunicationVRPN::processButtonMessage(void *userdata, const vrpn_BUTTONCB b)
 {
     std::cout << "Button '" << b.button << "': " << b.state << std::endl;
+}
+
+void VRPN_CALLBACK ServerCommunicationVRPN::processTrackerMessage(void *userdata, const vrpn_TRACKERCB z)
+{
+    std::cout << "Tracker '" << z.sensor << "' : " << z.pos[0] << "," <<  z.pos[1] << "," << z.pos[2] << endl;
 }
 
 std::string ServerCommunicationVRPN::getArgumentValue(std::string value)
