@@ -77,7 +77,8 @@ void ServerCommunicationVRPN::sendData()
     std::vector<vrpn_Text_Sender*> senders;
 
     //Creating Server
-    vrpn_Connection *sc = vrpn_create_server_connection();
+    vrpn_Connection *sc;
+    vrpn_Text_Sender *s;
 
     std::map<std::string, CommunicationSubscriber*> subscribersMap = getSubscribers();
     if (subscribersMap.size() == 0)
@@ -90,11 +91,12 @@ void ServerCommunicationVRPN::sendData()
     {
         CommunicationSubscriber* subscriber = it->second;
 
-        //Taking a string in converting it into char *
+        //Taking a string in convertng it into char *
         std::string str = subscriber->getSubject()+"@"+address;
         const char *device = str.c_str();
 
         //Sending text via VRPN
+        vrpn_Connection *sc = vrpn_create_server_connection();
         vrpn_Text_Sender *s = new vrpn_Text_Sender(device, sc);
         senders.front();
     }
@@ -108,11 +110,6 @@ void ServerCommunicationVRPN::sendData()
         while (sc->connected())
         {
             printf("Please enter the message:\n");
-            if (scanf("%s", msg) != 1)
-            {
-                fprintf(stderr, "No message entered\n");
-                return(-1);
-            }
             s->send_message(msg, vrpn_TEXT_NORMAL);
             sc->mainloop();
         }
@@ -188,5 +185,4 @@ std::string ServerCommunicationVRPN::getArgumentType(std::string value)
 }
 }
 }
-
 
