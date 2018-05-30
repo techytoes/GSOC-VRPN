@@ -163,7 +163,7 @@ void ServerCommunicationVRPN::receiveData()
 
    while(this->m_running)
    {
-       for(auto rec : receivers )
+       for(auto rec : receiversText )
        {
            rec->mainloop();
        }
@@ -192,7 +192,7 @@ void VRPN_CALLBACK ServerCommunicationVRPN::processButtonMessage(void *userdata,
 
 void VRPN_CALLBACK ServerCommunicationVRPN::processTrackerMessage(void *userdata, const vrpn_TRACKERCB z)
 {
-    std::cout << "Tracker '" << z.sensor << "' : " << z.pos[0] << "," <<  z.pos[1] << "," << z.pos[2] << endl;
+    std::cout << "Tracker '" << z.sensor << "' : " << z.pos[0] << "," <<  z.pos[1] << "," << z.pos[2] << std::endl;
 }
 
 std::string ServerCommunicationVRPN::getArgumentValue(std::string value)
