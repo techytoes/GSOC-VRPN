@@ -21,3 +21,12 @@ $ ./a.out
 # CMAKE-GUI Configuration
 
 ![cmake](images/cmake.png)
+
+## How to Use ServerCommunication VRPN
+
+Recieve
+
+```
+<ServerCommunicationVRPN name="vrpn1" job="receiver" address="localhost"/>
+<CommunicationSubscriber name="sub1" communication="@vrpn1" subject="Mouse0" target="@light1" datas="aNewStringValue"/>
+```
