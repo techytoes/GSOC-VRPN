@@ -11,12 +11,11 @@
 
 #define MAX 1024
 
-int main (int argc)
+int main ()
 {
 	char msg[MAX];
 	vrpn_Connection *sc = vrpn_create_server_connection();
 	vrpn_Text_Sender *s = new vrpn_Text_Sender("Mouse0@localhost", sc);
-//    vrpn_Analog_Remote* vrpnAnalog = new vrpn_Analog_Remote("Mouse0@localhost");
 	
 	while (1) {
 		while (!sc->connected()) {  // wait until we've got a connection
@@ -29,7 +28,6 @@ int main (int argc)
 			return(-1);
 		  }
 	          s->send_message(msg, vrpn_TEXT_NORMAL);
-		  s->mainloop();
 		  sc->mainloop();
 		}
 	}

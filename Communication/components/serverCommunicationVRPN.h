@@ -4,6 +4,8 @@
 #include<vrpn_Text.h>
 #include<vrpn_Connection.h>
 
+#define MAX 1024
+
 namespace sofa
 {
 
@@ -20,10 +22,10 @@ public:
     typedef ServerCommunication Inherited;
     SOFA_CLASS(ServerCommunicationVRPN, Inherited);
 
-    ServerCommunicationVRPN();
+    //ServerCommunicationVRPN();
     virtual ~ServerCommunicationVRPN();
 
-    ArgumentList stringToArgumentList(std::string dataString);
+    //ArgumentList stringToArgumentList(std::string dataString);
 
     //////////////////////////////// Factory VRPN type /////////////////////////////////
     typedef CommunicationDataFactory VRPNDataFactory;
@@ -34,17 +36,11 @@ public:
     virtual std::string getArgumentType(std::string value) override;
     virtual std::string getArgumentValue(std::string value) override;
 
-    Data<helper::OptionsGroup>  d_pattern;
-
-
-    int getTimeout() const;
-    void setTimeout(int timeout);
+    //Data<helper::OptionsGroup>  d_pattern;
+    //int getTimeout() const;
+    //void setTimeout(int timeout);
 
 protected:
-
-    //zmq::context_t     m_context{1};
-    vrpn_Text_Receiver      *m_socket;
-    //int                m_timeout;
 
     //////////////////////////////// Inherited from ServerCommunication /////////////////////////////////
     virtual void sendData() override;
@@ -52,11 +48,12 @@ protected:
     virtual std::string defaultDataType() override;
     /////////////////////////////////////////////////////////////////////////////////
 
-    void sendRequest();
-    void receiveRequest();
+    //void sendRequest();
+    //void receiveRequest();
 
-    std::string createVRPNMessage(CommunicationSubscriber* subscriber, std::string argument);
-    void processMessage(std::string dataString);
+    static void VRPN_CALLBACK processTextMessage(void *userdata, const vrpn_TEXTCB t);
+    //std::string createVRPNMessage(CommunicationSubscriber* subscriber, std::string argument);
+    //void processMessage(std::string dataString);
 
 };
 
@@ -64,4 +61,4 @@ protected:
 }   /// namespace component
 }   /// namespace sofa
 
-#endif // SOFA_SERVERCOMMUNICATIONVRPN_H
+
