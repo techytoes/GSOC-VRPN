@@ -19,3 +19,5 @@ $ ./a.out
 $ g++ testServer.cpp
 $ ./a.out
 ```
+
+* Note : If you face errors while compiling you can use flags like `-lvrpn` and `-lpthread`.
