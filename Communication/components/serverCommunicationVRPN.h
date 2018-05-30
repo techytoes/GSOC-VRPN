@@ -1,6 +1,8 @@
 #include "serverCommunication.h"
 
 #include<vrpn_Analog.h>
+#include<vrpn_Button.h>
+#include<vrpn_Tracker.h>
 #include<vrpn_Text.h>
 #include<vrpn_Connection.h>
 
@@ -52,6 +54,8 @@ protected:
     //void receiveRequest();
 
     static void VRPN_CALLBACK processTextMessage(void *userdata, const vrpn_TEXTCB t);
+    static void VRPN_CALLBACK processButtonMessage(void *userdata, const vrpn_BUTTONCB t);
+    static void VRPN_CALLBACK processTrackerMessage(void *userdata, const vrpn_Tracker t);
     //std::string createVRPNMessage(CommunicationSubscriber* subscriber, std::string argument);
     //void processMessage(std::string dataString);
 
@@ -60,5 +64,4 @@ protected:
 }   /// namespace communication
 }   /// namespace component
 }   /// namespace sofa
-
 
