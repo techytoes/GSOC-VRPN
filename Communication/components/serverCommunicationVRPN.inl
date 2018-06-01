@@ -72,13 +72,13 @@ std::string ServerCommunicationVRPN::defaultDataType()
 
 void ServerCommunicationVRPN::sendData()
 {
-    std::string address = d_address.getValueString();
     char msg[MAX];
     std::vector<vrpn_Text_Sender*> senders;
+    std::string address = d_address.getValueString();
 
     //Creating Server
-    vrpn_Connection *sc;
-    vrpn_Text_Sender *s;
+    vrpn_Connection *sc = NULL;
+    vrpn_Text_Sender *s = NULL;
 
     std::map<std::string, CommunicationSubscriber*> subscribersMap = getSubscribers();
     if (subscribersMap.size() == 0)
@@ -98,7 +98,7 @@ void ServerCommunicationVRPN::sendData()
         //Sending text via VRPN
         vrpn_Connection *sc = vrpn_create_server_connection();
         vrpn_Text_Sender *s = new vrpn_Text_Sender(device, sc);
-        senders.front();
+        senders.push_back(s);
     }
 
     while (this->m_running)
@@ -192,7 +192,7 @@ void VRPN_CALLBACK ServerCommunicationVRPN::processButtonMessage(void *userdata,
 
 void VRPN_CALLBACK ServerCommunicationVRPN::processTrackerMessage(void *userdata, const vrpn_TRACKERCB z)
 {
-    std::cout << "Tracker '" << z.sensor << "' : " << z.pos[0] << "," <<  z.pos[1] << "," << z.pos[2] << std::endl;
+    std::cout << "Tracker '" << z.sensor << "': " << z.pos[0] << "," <<  z.pos[1] << "," << z.pos[2] << std::endl;
 }
 
 std::string ServerCommunicationVRPN::getArgumentValue(std::string value)
