@@ -61,7 +61,7 @@ void ServerCommunicationVRPN::initTypeFactory()
 
 std::string ServerCommunicationVRPN::defaultDataType()
 {
-    return NULL;
+    return "string";
 }
 
 /******************************************************************************
@@ -72,13 +72,13 @@ std::string ServerCommunicationVRPN::defaultDataType()
 
 void ServerCommunicationVRPN::sendData()
 {
-    char msg[MAX];
-    std::vector<vrpn_Text_Sender*> senders;
+    std::vector<vrpn_Text_Sender*> sendersText;
+    std::vector<vrpn_Analog_Server*> sendersAnalog;
     std::string address = d_address.getValueString();
 
     //Creating Server
-    vrpn_Connection *sc = NULL;
-    vrpn_Text_Sender *s = NULL;
+    //Sending text via VRPN
+    vrpn_Connection *sc = vrpn_create_server_connection();
 
     std::map<std::string, CommunicationSubscriber*> subscribersMap = getSubscribers();
     if (subscribersMap.size() == 0)
@@ -95,10 +95,13 @@ void ServerCommunicationVRPN::sendData()
         std::string str = subscriber->getSubject()+"@"+address;
         const char *device = str.c_str();
 
-        //Sending text via VRPN
-        vrpn_Connection *sc = vrpn_create_server_connection();
-        vrpn_Text_Sender *s = new vrpn_Text_Sender(device, sc);
-        senders.push_back(s);
+        vrpn_Text_Sender *textServer = new vrpn_Text_Sender(device, sc);
+        sendersText.push_back(textServer);
+
+        //Analog Server
+        vrpn_Analog_Server *analogServer = new vrpn_Analog_Server(device, sc);
+        sendersAnalog.push_back(analogServer);
+
     }
 
     while (this->m_running)
@@ -109,9 +112,16 @@ void ServerCommunicationVRPN::sendData()
         }
         while (sc->connected())
         {
-            printf("Please enter the message:\n");
-            s->send_message(msg, vrpn_TEXT_NORMAL);
+            //printf("Please enter the message:\n");
+            for(std::vector<vrpn_Text_Sender*>::iterator it = sendersText.begin(); it != sendersText.end(); it++)
+            {
+                std::string msg2 = "***************THIS IS A TEST MESSAGE TO BE RECEIVED AT THE CLIENT****************";
+                (*it)->send_message(msg2.c_str(), vrpn_TEXT_NORMAL);
+                (*it)->mainloop();
+            }
             sc->mainloop();
+
+            //Server for Analog
         }
     }
 }
@@ -124,50 +134,53 @@ void ServerCommunicationVRPN::sendData()
 
 void ServerCommunicationVRPN::receiveData()
 {
-   std::string address = d_address.getValueString();
-   std::vector<vrpn_Text_Receiver*> receiversText;
-   std::vector<vrpn_Button_Remote*> receiversButton;
-   std::vector<vrpn_Tracker_Remote*> receiversTracker;
+    std::string address = d_address.getValueString();
+    std::vector<vrpn_BaseClass*> receivers;
 
-   std::map<std::string, CommunicationSubscriber*> subscribersMap = getSubscribers();
-   if (subscribersMap.size() == 0)
-   {
-       if (isVerbose())
-           msg_info(this) << "Server Communication VRPN does not have Subscriber";
-       return;
-   }
-   for (std::map<std::string, CommunicationSubscriber*>::iterator it = subscribersMap.begin(); it != subscribersMap.end(); it++)
-   {
-       CommunicationSubscriber* subscriber = it->second;
+    std::map<std::string, CommunicationSubscriber*> subscribersMap = getSubscribers();
+    if (subscribersMap.size() == 0)
+    {
+        if (isVerbose())
+            msg_info(this) << "Server Communication VRPN does not have Subscriber";
+        return;
+    }
+    for (std::map<std::string, CommunicationSubscriber*>::iterator it = subscribersMap.begin(); it != subscribersMap.end(); it++)
+    {
+        CommunicationSubscriber* subscriber = it->second;
 
-       //Taking a string in convertng it into char *
-       std::string str = subscriber->getSubject()+"@"+address;
-       const char *device = str.c_str();
+        //Taking a string in convertng it into char *
+        std::string str = subscriber->getSubject()+"@"+address;
+        const char *device = str.c_str();
 
-       //Recieving text via VRPN
-       vrpn_Text_Receiver *vrpnText = new vrpn_Text_Receiver(device);
-       vrpnText->register_message_handler( (void*)subscriber->getSubject().c_str(), processTextMessage );
-       receiversText.push_back(vrpnText);
+        //Recieving Text via VRPN
+        vrpn_Text_Receiver *vrpnText = new vrpn_Text_Receiver(device);
+        vrpnText->register_message_handler( (void*)subscriber->getSubject().c_str(), processTextMessage );
+        receivers.push_back(vrpnText);
 
-       //Receiving Button via VRPN
-       vrpn_Button_Remote *vrpnButton = new vrpn_Button_Remote(device);
-       vrpnButton->register_change_handler( (void*)subscriber->getSubject().c_str(), processButtonMessage);
-       receiversButton.push_back(vrpnButton);
+        //Receiving Analog via VRPN
+        vrpn_Analog_Remote *vrpnAnalog = new vrpn_Analog_Remote(device);
+        vrpnAnalog->register_change_handler( (void*)subscriber->getSubject().c_str(), processAnalogMessage);
+        receivers.push_back(vrpnAnalog);
 
-       //Receiving Button via VRPN
-       vrpn_Tracker_Remote *vrpnTracker = new vrpn_Tracker_Remote(device);
-       vrpnTracker->register_change_handler( (void*)subscriber->getSubject().c_str(), processTrackerMessage);
-       receiversTracker.push_back(vrpnTracker);
-   }
+        //Receiving Button via VRPN
+        vrpn_Button_Remote *vrpnButton = new vrpn_Button_Remote(device);
+        vrpnButton->register_change_handler( (void*)subscriber->getSubject().c_str(), processButtonMessage);
+        receivers.push_back(vrpnButton);
+
+        //Receiving Tracker via VRPN
+        vrpn_Tracker_Remote *vrpnTracker = new vrpn_Tracker_Remote(device);
+        vrpnTracker->register_change_handler( (void*)subscriber->getSubject().c_str(), processTrackerMessage);
+        receivers.push_back(vrpnTracker);
+    }
 
 
-   while(this->m_running)
-   {
-       for(auto rec : receiversText )
-       {
-           rec->mainloop();
-       }
-   }
+    while(this->m_running)
+    {
+        for(auto rec : receivers )
+        {
+            rec->mainloop();
+        }
+    }
 }
 
 void VRPN_CALLBACK ServerCommunicationVRPN::processTextMessage(void *userdata, const vrpn_TEXTCB t)
@@ -181,8 +194,19 @@ void VRPN_CALLBACK ServerCommunicationVRPN::processTextMessage(void *userdata, c
         stream.append(t.message);
         messageStream.push_back(stream);
         std::cout << name << " : Text message: " << t.message << std::endl;
-        //processs see linefunciton processmessaage of osc
+        //processs see linefunction processmessaage of osc
     }
+}
+
+void VRPN_CALLBACK ServerCommunicationVRPN::processAnalogMessage(void *userdata, const vrpn_ANALOGCB a)
+{
+    int nbChannels = a.num_channel;
+    std::cout << "Analog : ";
+    for( int i=0; i < a.num_channel; i++ )
+    {
+        std::cout << a.channel[i] << " ";
+    }
+    std::cout<<std::endl;
 }
 
 void VRPN_CALLBACK ServerCommunicationVRPN::processButtonMessage(void *userdata, const vrpn_BUTTONCB b)
