@@ -10,7 +10,7 @@ $ brew install vrpn
 ```
 To run the example
 ```
-$ g++ test.cpp -lvrpn
+$ g++ test.cpp -lvrpn -lpthread
 $ ./a.out
 ```
 
@@ -28,5 +28,12 @@ Recieve
 
 ```
 <ServerCommunicationVRPN name="vrpn1" job="receiver" address="localhost"/>
+<CommunicationSubscriber name="sub1" communication="@vrpn1" subject="Mouse0" target="@light1" datas="aNewStringValue"/>
+```
+
+Sender
+
+```
+<ServerCommunicationVRPN name="vrpn1" job="sender" address="localhost"/>
 <CommunicationSubscriber name="sub1" communication="@vrpn1" subject="Mouse0" target="@light1" datas="aNewStringValue"/>
 ```
