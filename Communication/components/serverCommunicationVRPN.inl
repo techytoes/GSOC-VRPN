@@ -74,6 +74,7 @@ void ServerCommunicationVRPN::sendData()
 {
     std::vector<vrpn_Text_Sender*> sendersText;
     std::vector<vrpn_Analog_Server*> sendersAnalog;
+
     std::string address = d_address.getValueString();
 
     //Creating Server
@@ -95,6 +96,7 @@ void ServerCommunicationVRPN::sendData()
         std::string str = subscriber->getSubject()+"@"+address;
         const char *device = str.c_str();
 
+        //Text Server
         vrpn_Text_Sender *textServer = new vrpn_Text_Sender(device, sc);
         sendersText.push_back(textServer);
 
@@ -102,6 +104,7 @@ void ServerCommunicationVRPN::sendData()
         vrpn_Analog_Server *analogServer = new vrpn_Analog_Server(device, sc);
         sendersAnalog.push_back(analogServer);
 
+        //Button Server
     }
 
     while (this->m_running)
@@ -115,13 +118,20 @@ void ServerCommunicationVRPN::sendData()
             //printf("Please enter the message:\n");
             for(std::vector<vrpn_Text_Sender*>::iterator it = sendersText.begin(); it != sendersText.end(); it++)
             {
-                std::string msg2 = "***************THIS IS A TEST MESSAGE TO BE RECEIVED AT THE CLIENT****************";
-                (*it)->send_message(msg2.c_str(), vrpn_TEXT_NORMAL);
+                //For Sending Text
+                std::string msgTemp = "***************THIS IS A TEST MESSAGE TO BE RECEIVED AT THE CLIENT****************";
+                (*it)->send_message(msgTemp.c_str(), vrpn_TEXT_NORMAL);
                 (*it)->mainloop();
+
             }
+
+            for(std::vector<vrpn_Analog_Server*>::iterator it = sendersAnalog.begin(); it != sendersAnalog.end(); it++)
+            {
+                (*it)->report_changes();
+            }
+
             sc->mainloop();
 
-            //Server for Analog
         }
     }
 }
@@ -231,4 +241,3 @@ std::string ServerCommunicationVRPN::getArgumentType(std::string value)
 }
 }
 }
-
