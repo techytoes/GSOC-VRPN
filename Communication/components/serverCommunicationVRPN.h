@@ -5,6 +5,7 @@
 #include<vrpn_Tracker.h>
 #include<vrpn_Text.h>
 #include<vrpn_Connection.h>
+#include<vrpn_Configure.h>
 
 #define MAX 1024
 
@@ -54,8 +55,9 @@ protected:
     //void receiveRequest();
 
     static void VRPN_CALLBACK processTextMessage(void *userdata, const vrpn_TEXTCB t);
+    static void VRPN_CALLBACK processAnalogMessage(void *userdata, const vrpn_ANALOGCB a);
     static void VRPN_CALLBACK processButtonMessage(void *userdata, const vrpn_BUTTONCB b);
-    static void VRPN_CALLBACK processTrackerMessage(void *userdata, const vrpn_Tracker z);
+    static void VRPN_CALLBACK processTrackerMessage(void *userdata, const vrpn_TRACKERCB z);
     //std::string createVRPNMessage(CommunicationSubscriber* subscriber, std::string argument);
     //void processMessage(std::string dataString);
 
