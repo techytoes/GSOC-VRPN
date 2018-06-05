@@ -74,12 +74,39 @@ void ServerCommunicationVRPN::sendData()
 {
     std::vector<vrpn_Text_Sender*> sendersText;
     std::vector<vrpn_Analog_Server*> sendersAnalog;
+    std::vector<vrpn_Tracker_Server*> sendersTracker;
 
     std::string address = d_address.getValueString();
 
     //Creating Server
     //Sending text via VRPN
-    vrpn_Connection *sc = vrpn_create_server_connection();
+    vrpn_Connection *m_connection = vrpn_create_server_connection();
+
+    //For tracker
+    // We will just put a fake data in the position of our tracker
+    static float angle = 0;
+    angle += 0.001f;
+    vrpn_float64 pos[3], d_quat[4];
+
+    // the pos array contains the position value of the tracker
+    // XXX Set your values here
+    pos[0] = sin ( angle );
+    pos[1] = 0.0f;
+    pos[2] = 0.0f;
+
+    // the d_quat array contains the orientation value of the tracker, stored as a quaternion
+    // XXX Set your values here
+    d_quat[0] = 0.0f;
+    d_quat[1] = 0.0f;
+    d_quat[2] = 0.0f;
+    d_quat[3] = 1.0f;
+
+    struct timeval t;
+    t.tv_usec = 100;
+    t.tv_sec = 1;
+
+    const vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY;
+    int sensor = 1;
 
     std::map<std::string, CommunicationSubscriber*> subscribersMap = getSubscribers();
     if (subscribersMap.size() == 0)
@@ -97,23 +124,25 @@ void ServerCommunicationVRPN::sendData()
         const char *device = str.c_str();
 
         //Text Server
-        vrpn_Text_Sender *textServer = new vrpn_Text_Sender(device, sc);
+        vrpn_Text_Sender *textServer = new vrpn_Text_Sender(device, m_connection);
         sendersText.push_back(textServer);
 
         //Analog Server
-        vrpn_Analog_Server *analogServer = new vrpn_Analog_Server(device, sc);
+        vrpn_Analog_Server *analogServer = new vrpn_Analog_Server(device, m_connection);
         sendersAnalog.push_back(analogServer);
 
-        //Button Server
+        //tracker Server
+        vrpn_Tracker_Server *trackerServer = new vrpn_Tracker_Server(device, m_connection);
+        sendersTracker.push_back(trackerServer);
     }
 
     while (this->m_running)
     {
-        while (!sc->connected())
+        while (!m_connection->connected())
         {  // wait until we've got a connection
-            sc->mainloop();
+            m_connection->mainloop();
         }
-        while (sc->connected())
+        while (m_connection->connected())
         {
             //printf("Please enter the message:\n");
             for(std::vector<vrpn_Text_Sender*>::iterator it = sendersText.begin(); it != sendersText.end(); it++)
@@ -130,7 +159,12 @@ void ServerCommunicationVRPN::sendData()
                 (*it)->report_changes();
             }
 
-            sc->mainloop();
+            for(std::vector<vrpn_Tracker_Server*>::iterator it = sendersTracker.begin(); it != sendersTracker.end(); it++)
+            {
+                (*it)->report_pose(sensor, t, pos, d_quat, class_of_service);
+            }
+
+            m_connection->mainloop();
 
         }
     }
@@ -241,3 +275,4 @@ std::string ServerCommunicationVRPN::getArgumentType(std::string value)
 }
 }
 }
+
