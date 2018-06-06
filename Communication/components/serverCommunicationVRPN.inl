@@ -74,6 +74,7 @@ void ServerCommunicationVRPN::sendData()
 {
     std::vector<vrpn_Text_Sender*> sendersText;
     std::vector<vrpn_Analog_Server*> sendersAnalog;
+    std::vector<vrpn_Button_Server*> sendersButton;
     std::vector<vrpn_Tracker_Server*> sendersTracker;
 
     std::string address = d_address.getValueString();
@@ -108,6 +109,9 @@ void ServerCommunicationVRPN::sendData()
     const vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY;
     int sensor = 1;
 
+    //For Button
+    int numbuttons = 10;
+
     std::map<std::string, CommunicationSubscriber*> subscribersMap = getSubscribers();
     if (subscribersMap.size() == 0)
     {
@@ -120,18 +124,22 @@ void ServerCommunicationVRPN::sendData()
         CommunicationSubscriber* subscriber = it->second;
 
         //Taking a string in converting it into char *
-        std::string str = subscriber->getSubject()+"@"+address;
-        const char *device = str.c_str();
+        std::string strTestText = subscriber->getSubject()+"@"+address;
+        const char *device = strTestText.c_str();
 
         //Text Server
         vrpn_Text_Sender *textServer = new vrpn_Text_Sender(device, m_connection);
         sendersText.push_back(textServer);
 
         //Analog Server
-        vrpn_Analog_Server *analogServer = new vrpn_Analog_Server(device, m_connection);
+        vrpn_Analog_Server *analogServer = new vrpn_Analog_Server(device, m_connection, 10);
         sendersAnalog.push_back(analogServer);
 
-        //tracker Server
+        //Button Server
+        vrpn_Button_Server *buttonServer = new vrpn_Button_Server(device, m_connection, 10);
+        sendersButton.push_back(buttonServer);
+
+        //Tracker Server
         vrpn_Tracker_Server *trackerServer = new vrpn_Tracker_Server(device, m_connection);
         sendersTracker.push_back(trackerServer);
     }
@@ -156,12 +164,23 @@ void ServerCommunicationVRPN::sendData()
 
             for(std::vector<vrpn_Analog_Server*>::iterator it = sendersAnalog.begin(); it != sendersAnalog.end(); it++)
             {
-                (*it)->report_changes();
+                // Routines used to send data from the server
+                std::string msgTemp = "********** Sample String to check for Analog ***********" ;
+                (*it)->encode_to(msgTemp.c_str());
+                (*it)->mainloop();
+            }
+
+            for(std::vector<vrpn_Button_Server*>::iterator it = sendersButton.begin(); it!= sendersButton.end(); it++)
+            {
+                std::string msgTemp = "********** Sample String to check for Button ***********" ;
+                (*it)->encode_states_to(msgTemp.c_str());
+                (*it)->mainloop();
             }
 
             for(std::vector<vrpn_Tracker_Server*>::iterator it = sendersTracker.begin(); it != sendersTracker.end(); it++)
             {
                 (*it)->report_pose(sensor, t, pos, d_quat, class_of_service);
+                (*it)->mainloop();
             }
 
             m_connection->mainloop();
