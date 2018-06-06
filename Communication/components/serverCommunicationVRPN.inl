@@ -166,14 +166,16 @@ void ServerCommunicationVRPN::sendData()
             {
                 // Routines used to send data from the server
                 std::string msgTemp = "********** Sample String to check for Analog ***********" ;
-                (*it)->encode_to(msgTemp.c_str());
+                char* msg = const_cast<char*>(msgTemp.c_str());
+                (*it)->encode_to(msg);
                 (*it)->mainloop();
             }
 
             for(std::vector<vrpn_Button_Server*>::iterator it = sendersButton.begin(); it!= sendersButton.end(); it++)
             {
                 std::string msgTemp = "********** Sample String to check for Button ***********" ;
-                (*it)->encode_states_to(msgTemp.c_str());
+                char* msg = const_cast<char*>(msgTemp.c_str());
+                (*it)->encode_states_to(msg);
                 (*it)->mainloop();
             }
 
