@@ -14,9 +14,6 @@
 // init_* and do_* are sample routines - put whatever you need there.
 //
 
-void init_audio_throughput_magic (int, char **) {
-
-}
 void do_audio_throughput_magic (double * channels) {
   static int done = 0;
 
@@ -48,8 +45,6 @@ int main (int argc, char ** argv) {
 
   delay.tv_sec = 0L;
   delay.tv_usec = 0L;
-
-  init_audio_throughput_magic(argc, argv);
 
   while (1) {
     do_audio_throughput_magic(ats->channels());
