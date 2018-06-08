@@ -102,9 +102,9 @@ void ServerCommunicationVRPN::sendData()
     d_quat[2] = 0.0f;
     d_quat[3] = 1.0f;
 
-    struct timeval t;
-    t.tv_usec = 0L;
-    t.tv_sec = 1L;
+    struct timeval delay;
+    delay.tv_usec = 0L;
+    delay.tv_sec = 0L;
 
     const vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY;
     int sensor = 0;
@@ -132,7 +132,8 @@ void ServerCommunicationVRPN::sendData()
         sendersText.push_back(textServer);
 
         //Analog Server
-        vrpn_Analog_Server *analogServer = new vrpn_Analog_Server(device, m_connection, 10);
+        vrpn_Analog_Server *analogServer = new vrpn_Analog_Server(device, m_connection);
+        analogServer->setNumChannels(1);
         sendersAnalog.push_back(analogServer);
 
 //        //Button Server
@@ -152,37 +153,38 @@ void ServerCommunicationVRPN::sendData()
         }
         while (m_connection->connected())
         {
-            //printf("Please enter the message:\n");
+            printf("Please enter the message:\n");
             for(std::vector<vrpn_Text_Sender*>::iterator it = sendersText.begin(); it != sendersText.end(); it++)
             {
                 //For Sending Text
                 std::string msgTemp = "***************THIS IS A TEST MESSAGE TO BE RECEIVED AT THE CLIENT****************";
                 (*it)->send_message(msgTemp.c_str(), vrpn_TEXT_NORMAL);
-                (*it)->mainloop();
+                m_connection->mainloop();
 
             }
+        }
 
-            for(std::vector<vrpn_Analog_Server*>::iterator it = sendersAnalog.begin(); it != sendersAnalog.end(); it++)
+        for(std::vector<vrpn_Analog_Server*>::iterator it = sendersAnalog.begin(); it != sendersAnalog.end(); it++)
+        {    
+            double * channels = (*it)->channels();
+            static int done = 0;
+
+            #if 1
+            if (!done) 
             {
-                static int done = 0;
-                double * channels = (*it)->channels();
-
-                #if 1
-                  if (!done) {
-                    channels[0] = 0.0;
-                    done = 1;
-                  } else
-                    channels[0] += 0.5;
-                #else
-                  struct timeval now;
-                  vrpn_gettimeofday(&now, NULL);
-                  channels[0] = sin(((double) now.tv_usec) / 1000000L);
-                #endif
-
-                // Routines used to send data from the server
-                (*it)->setNumChannels(1);
-                (*it)->report_changes();
-            }
+                channels[0] = 0.0;
+                done = 1;
+            } else
+                channels[0] += 0.5;
+            #else
+                struct timeval now;
+                vrpn_gettimeofday(&now, NULL);
+                channels[0] = sin(((double) now.tv_usec) / 1000000L);
+            #endif
+            (*it)->report_changes();
+            m_connection->mainloop(&delay);
+            fprintf(stderr, "while():  a = %.2g\n", (*it)->channels()[0]);
+        }
 
 //            for(std::vector<vrpn_Button_Server*>::iterator it = sendersButton.begin(); it!= sendersButton.end(); it++)
 //            {
@@ -193,15 +195,11 @@ void ServerCommunicationVRPN::sendData()
 //                (*it)->mainloop();
 //            }
 
-            for(std::vector<vrpn_Tracker_Server*>::iterator it = sendersTracker.begin(); it != sendersTracker.end(); it++)
-            {
-                (*it)->report_pose(sensor, t, pos, d_quat, class_of_service);
-                (*it)->mainloop();
-            }
-
-            m_connection->mainloop(&t);
-
-        }
+//            for(std::vector<vrpn_Tracker_Server*>::iterator it = sendersTracker.begin(); it != sendersTracker.end(); it++)
+//            {
+//                (*it)->report_pose(sensor, delay, pos, d_quat, class_of_service);
+//                (*it)->mainloop();
+//            }
     }
 }
 
