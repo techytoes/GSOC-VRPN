@@ -38,10 +38,8 @@ int main (int argc, char ** argv) {
   struct timeval delay;
 
   c = vrpn_create_server_connection();
-  ats = new vrpn_Analog_Server ("Tracker0@localhost", c);
+  ats = new vrpn_Analog_Server ("Mouse0@localhost", c);
   ats->setNumChannels(1);
-
-  printf("Services named audio-throughput and video-throughput now listening on port %d.\n", vrpn_DEFAULT_LISTEN_PORT_NO);
 
   delay.tv_sec = 0L;
   delay.tv_usec = 0L;
