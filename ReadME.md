@@ -24,6 +24,8 @@ $ ./a.out
 
 ## How to Use ServerCommunication VRPN
 
+For Analog -
+
 Recieve
 
 ```
@@ -36,4 +38,20 @@ Sender
 ```
 <ServerCommunicationVRPN name="vrpn1" job="sender" address="localhost"/>
 <CommunicationSubscriber name="sub1" communication="@vrpn1" subject="Mouse0" target="@light1" datas="aNewStringValue"/>
+```
+
+For Tracker -
+
+Receiver
+
+```
+<ServerCommunicationVRPN name="vrpn1" job="receiver" address="localhost"/>
+<CommunicationSubscriber name="sub1" communication="@vrpn1" subject="Tracker0" target="@light1" datas="aNewStringValue"/>
+```
+
+Sender
+
+```
+<ServerCommunicationVRPN name="vrpn1" job="sender" address="localhost"/>
+<CommunicationSubscriber name="sub1" communication="@vrpn1" subject="Tracker0" target="@light1" datas="aNewStringValue"/>
 ```
