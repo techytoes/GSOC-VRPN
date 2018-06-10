@@ -195,11 +195,11 @@ void ServerCommunicationVRPN::sendData()
 //                (*it)->mainloop();
 //            }
 
-//            for(std::vector<vrpn_Tracker_Server*>::iterator it = sendersTracker.begin(); it != sendersTracker.end(); it++)
-//            {
-//                (*it)->report_pose(sensor, delay, pos, d_quat, class_of_service);
-//                (*it)->mainloop();
-//            }
+        for(std::vector<vrpn_Tracker_Server*>::iterator it = sendersTracker.begin(); it != sendersTracker.end(); it++)
+        {
+            (*it)->report_pose(sensor, delay, pos, d_quat, class_of_service);
+            (*it)->mainloop();
+        }
     }
 }
 
