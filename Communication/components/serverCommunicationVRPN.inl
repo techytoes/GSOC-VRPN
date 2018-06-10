@@ -169,18 +169,13 @@ void ServerCommunicationVRPN::sendData()
             double * channels = (*it)->channels();
             static int done = 0;
 
-            #if 1
             if (!done) 
             {
                 channels[0] = 0.0;
                 done = 1;
             } else
                 channels[0] += 0.5;
-            #else
-                struct timeval now;
-                vrpn_gettimeofday(&now, NULL);
-                channels[0] = sin(((double) now.tv_usec) / 1000000L);
-            #endif
+                
             (*it)->report_changes();
             m_connection->mainloop(&delay);
             fprintf(stderr, "while():  a = %.2g\n", (*it)->channels()[0]);
