@@ -3,7 +3,7 @@ project(Communication)
 
 option(PLUGIN_COMMUNICATION_Oscpack "Make use of the Oscpack protocol" OFF)
 option(PLUGIN_COMMUNICATION_ZMQ "Make use of the ZMQ protocol" OFF)
-option(PLUGIN_COMMUNICATION_ZMQ "Make use of the VRPN protocol" OFF)
+option(PLUGIN_COMMUNICATION_VRPN "Make use of the VRPN protocol" OFF)
 
 set(COMMUNICATION_MAJOR_VERSION 1)
 set(COMMUNICATION_MINOR_VERSION 0)
@@ -48,6 +48,10 @@ set(EXTRA_FILES
     examples/OSC/matrix/Sender/sender.scn
 
     examples/OSC/matrix/Receiver/receiver.scn
+
+    examples/VRPN/primitives/Text/Sender/sender.scn
+
+    examples/VRPN/primitives/Text/Receiver/receiver.scn
     )
 
 find_package(SofaFramework REQUIRED)
