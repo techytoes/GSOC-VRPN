@@ -51,19 +51,16 @@ protected:
     virtual std::string defaultDataType() override;
     /////////////////////////////////////////////////////////////////////////////////
 
-    //void sendRequest();
-    //void receiveRequest();
 
     static void VRPN_CALLBACK processTextMessage(void *userdata, const vrpn_TEXTCB t);
     static void VRPN_CALLBACK processAnalogMessage(void *userdata, const vrpn_ANALOGCB a);
     static void VRPN_CALLBACK processButtonMessage(void *userdata, const vrpn_BUTTONCB b);
     static void VRPN_CALLBACK processTrackerMessage(void *userdata, const vrpn_TRACKERCB z);
-    //std::string createVRPNMessage(CommunicationSubscriber* subscriber, std::string argument);
-    //void processMessage(std::string dataString);
-
+    vrpn_Connection *m_connection;
+    vrpn_Text_Sender *vrpn_text_sender;
+    void sendVRPNMessage(CommunicationSubscriber *subscriber, std::string argument);
 };
 
 }   /// namespace communication
 }   /// namespace component
 }   /// namespace sofa
-
