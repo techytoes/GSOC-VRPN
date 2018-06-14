@@ -87,6 +87,8 @@ void ServerCommunicationVRPN::sendData()
         std::string strTestText = subscriber->getSubject()+"@"+address;
         const char *device = strTestText.c_str();
         vrpn_text_sender = new vrpn_Text_Sender(device, m_connection);
+        vrpn_analog_server = new vrpn_Analog_Server(device, m_connection);
+
     }
 
     while (!m_connection->connected() && this->m_running)
@@ -108,7 +110,7 @@ void ServerCommunicationVRPN::sendData()
                 if (isVerbose())
                     msg_info("ServerCommunicationVRPN") << e.what();
             }
-            m_connection->mainloop();
+            m_connection->mainloop(&delay);
         }
     }
 }
@@ -122,10 +124,29 @@ void ServerCommunicationVRPN::sendVRPNMessage(CommunicationSubscriber* subscribe
     const AbstractTypeInfo *typeinfo = data->getValueTypeInfo();
     const void* valueVoidPtr = data->getValueVoidPtr();
 
+    delay.tv_sec = 0L;
+    delay.tv_usec = 0L;
+
     if (!typeinfo->Container())
     {
         if (vrpn_text_sender)
             vrpn_text_sender->send_message(data->getValueString().c_str(), vrpn_TEXT_NORMAL);
+
+        if (vrpn_analog_server)
+        {
+            vrpn_analog_server->setNumChannels(1);
+            double *channels = vrpn_analog_server->channels();
+            static int done = 0;
+            if (!done)
+            {
+                channels[0] = stod (data->getValueString());
+                done = 1;
+            }
+            else
+                channels[0] += stod (data->getValueString());
+
+            vrpn_analog_server->report_changes();
+        }
     }
 }
 
@@ -234,3 +255,4 @@ std::string ServerCommunicationVRPN::getArgumentType(std::string value)
 }
 }
 }
+
