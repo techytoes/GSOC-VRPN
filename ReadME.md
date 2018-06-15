@@ -30,14 +30,14 @@ Recieve
 
 ```
 <ServerCommunicationVRPN name="vrpn1" job="receiver" address="localhost"/>
-<CommunicationSubscriber name="sub1" communication="@vrpn1" subject="Mouse0" target="@light1" datas="aNewStringValue"/>
+<CommunicationSubscriber name="sub1" communication="@vrpn1" subject="Mouse0" target="@light1" datas="cutoff"/>
 ```
 
 Sender
 
 ```
 <ServerCommunicationVRPN name="vrpn1" job="sender" address="localhost"/>
-<CommunicationSubscriber name="sub1" communication="@vrpn1" subject="Mouse0" target="@light1" datas="aNewStringValue"/>
+<CommunicationSubscriber name="sub1" communication="@vrpn1" subject="Mouse0" target="@light1" datas="cutoff"/>
 ```
 
 For Tracker -
