@@ -139,6 +139,7 @@ void ServerCommunicationVRPN::sendVRPNMessage(CommunicationSubscriber* subscribe
             static int done = 0;
             if (!done)
             {
+                //converting string to double*
                 channels[0] = stod (data->getValueString());
                 done = 1;
             }
@@ -148,6 +149,8 @@ void ServerCommunicationVRPN::sendVRPNMessage(CommunicationSubscriber* subscribe
             vrpn_analog_server->report_changes();
         }
     }
+
+    delete data;
 }
 
 /******************************************************************************
