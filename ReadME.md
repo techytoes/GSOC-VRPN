@@ -13,6 +13,54 @@ To run the example
 $ g++ test.cpp -lvrpn -lpthread
 $ ./a.out
 ```
+* Linux
+
+Download VRPN source (version 7.33):
+```sh
+wget https://github.com/vrpn/vrpn/releases/download/v07.33/vrpn_07_33.zip
+```
+
+Extract source archive:
+
+```sh
+unzip vrpn_07_33.zip
+```
+
+We don't need the archive anymore. So let's delete it:
+
+```sh
+rm -f vrpn_07_33.zip
+```
+
+Change to source directory:
+
+```sh
+cd vrpn
+```
+
+Create a build directory and go into it:
+
+```sh
+mkdir build && cd build
+```
+
+Generate build environment using `cmake`:
+
+```sh
+cmake ..
+```
+
+Build project:
+
+```sh
+make
+```
+
+Install VRPN:
+
+```sh
+sudo make install
+```
 
 # QtCreator
 
