@@ -214,14 +214,19 @@ void VRPN_CALLBACK ServerCommunicationVRPN::processTextMessage(void *userdata, c
 {
     std::cout << "Type : " << t.type << std::endl;
     const char *name = (const char *)userdata;
-    if (t.type == vrpn_TEXT_NORMAL)
+    ArgumentList textStream;
+    ServerCommunicationVRPN obj;
+    std::map<std::string, CommunicationSubscriber*> subscribersMap = obj.getSubscribers();
+    for (std::map<std::string, CommunicationSubscriber*>::iterator it = subscribersMap.begin(); it != subscribersMap.end(); it++)
     {
-        ArgumentList messageStream;
-        std::string stream = "string:";
-        stream.append(t.message);
-        messageStream.push_back(stream);
-        std::cout << name << " : Text message: " << t.message << std::endl;
-        //processs see linefunction processmessaage of osc
+        CommunicationSubscriber* subscriber = it->second;
+        if (t.type == vrpn_TEXT_NORMAL)
+        {
+            std::string stream = "string:";
+            stream.append(t.message);
+            textStream.push_back("VRPNstring" + stream);
+        }
+        obj.saveDatasToReceivedBuffer(subscriber->getSubject(), textStream, -1, -1);
     }
 }
 
