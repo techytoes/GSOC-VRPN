@@ -217,19 +217,6 @@ void ServerCommunicationVRPN::receiveData()
 
 void VRPN_CALLBACK ServerCommunicationVRPN::processTextMessage(void *userdata, const vrpn_TEXTCB t)
 {
-    //    const char *name = (const char *)userdata;
-
-    //    if (t.type == vrpn_TEXT_NORMAL)
-    //    {
-    //        ArgumentList textStream;
-    //        std::string stream = "VRPNstring:";
-    //        stream.append(t.message);
-    //        textStream.push_back(stream);
-    //        std::cout<<t.message;
-
-    //
-    //    }
-    //    const char *name = (const char *)userdata;
     ServerCommunicationVRPN* instance = static_cast<ServerCommunicationVRPN*>(userdata);
     std::map<std::string, CommunicationSubscriber*> subscribersMap = instance->getSubscribers();
     ArgumentList messageStream;
@@ -242,13 +229,12 @@ void VRPN_CALLBACK ServerCommunicationVRPN::processTextMessage(void *userdata, c
         message.append("'");
         messageStream.push_back(message);
         std::cout  << " : Text message: " << message << std::endl;
-        //processs see linefunction processmessaage of osc
     }
-    //for (std::map<std::string, CommunicationSubscriber*>::iterator it = subscribersMap.begin(); it != subscribersMap.end(); it++)
-    //{
-    //    CommunicationSubscriber* subscriber = it->second;
-    instance->saveDatasToReceivedBuffer("Mouse0", messageStream, -1, -1);
-    //}
+    for (std::map<std::string, CommunicationSubscriber*>::iterator it = subscribersMap.begin(); it != subscribersMap.end(); it++)
+    {
+        CommunicationSubscriber* subscriber = it->second;
+        instance->saveDatasToReceivedBuffer( subscriber->getSubject(), messageStream, -1, -1);
+    }
 }
 
 void VRPN_CALLBACK ServerCommunicationVRPN::processAnalogMessage(void *userdata, const vrpn_ANALOGCB a)
@@ -284,12 +270,6 @@ void VRPN_CALLBACK ServerCommunicationVRPN::processTrackerMessage(void *userdata
 {
     std::cout << "Tracker '" << z.sensor << "': " << z.pos[0] << "," <<  z.pos[1] << "," << z.pos[2] << std::endl;
 }
-
-/******************************************************************************
-*                                                                             *
-* MESSAGE CONVERSION PART                                                     *
-*                                                                             *
-******************************************************************************/
 
 std::string ServerCommunicationVRPN::getArgumentValue(std::string value)
 {
