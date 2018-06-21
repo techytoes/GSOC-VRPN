@@ -34,9 +34,14 @@ namespace component
 namespace communication
 {
 
+ServerCommunicationVRPN::ServerCommunicationVRPN()
+    : Inherited()
+{
+}
+
 ServerCommunicationVRPN::~ServerCommunicationVRPN()
 {
-
+    // TODO stop server/client + release objects
 }
 
 ServerCommunicationVRPN::VRPNDataFactory* ServerCommunicationVRPN::getFactoryInstance()
@@ -49,10 +54,10 @@ ServerCommunicationVRPN::VRPNDataFactory* ServerCommunicationVRPN::getFactoryIns
 
 void ServerCommunicationVRPN::initTypeFactory()
 {
-    getFactoryInstance()->registerCreator("float", new DataCreator<float>());
+    getFactoryInstance()->registerCreator("VRPNfloat", new DataCreator<float>());
     getFactoryInstance()->registerCreator("double", new DataCreator<double>());
     getFactoryInstance()->registerCreator("int", new DataCreator<int>());
-    getFactoryInstance()->registerCreator("string", new DataCreator<std::string>());
+    getFactoryInstance()->registerCreator("VRPNstring", new DataCreator<std::string>());
 
     getFactoryInstance()->registerCreator("matrixfloat", new DataCreator<FullMatrix<float>>());
     getFactoryInstance()->registerCreator("matrixdouble", new DataCreator<FullMatrix<double>>());
@@ -61,7 +66,7 @@ void ServerCommunicationVRPN::initTypeFactory()
 
 std::string ServerCommunicationVRPN::defaultDataType()
 {
-    return "string";
+    return "VRPNstring";
 }
 
 /******************************************************************************
@@ -181,7 +186,7 @@ void ServerCommunicationVRPN::receiveData()
 
         //Recieving Text via VRPN
         vrpn_Text_Receiver *vrpnText = new vrpn_Text_Receiver(device);
-        vrpnText->register_message_handler( (void*)subscriber->getSubject().c_str(), processTextMessage );
+        vrpnText->register_message_handler( (void*) this, processTextMessage );
         receivers.push_back(vrpnText);
 
         //Receiving Analog via VRPN
@@ -212,33 +217,62 @@ void ServerCommunicationVRPN::receiveData()
 
 void VRPN_CALLBACK ServerCommunicationVRPN::processTextMessage(void *userdata, const vrpn_TEXTCB t)
 {
-    std::cout << "Type : " << t.type << std::endl;
-    const char *name = (const char *)userdata;
-    ArgumentList textStream;
-    ServerCommunicationVRPN obj;
-    std::map<std::string, CommunicationSubscriber*> subscribersMap = obj.getSubscribers();
-    for (std::map<std::string, CommunicationSubscriber*>::iterator it = subscribersMap.begin(); it != subscribersMap.end(); it++)
+    //    const char *name = (const char *)userdata;
+
+    //    if (t.type == vrpn_TEXT_NORMAL)
+    //    {
+    //        ArgumentList textStream;
+    //        std::string stream = "VRPNstring:";
+    //        stream.append(t.message);
+    //        textStream.push_back(stream);
+    //        std::cout<<t.message;
+
+    //
+    //    }
+    //    const char *name = (const char *)userdata;
+    ServerCommunicationVRPN* instance = static_cast<ServerCommunicationVRPN*>(userdata);
+    std::map<std::string, CommunicationSubscriber*> subscribersMap = instance->getSubscribers();
+    ArgumentList messageStream;
+
+    if (t.type == vrpn_TEXT_NORMAL)
     {
-        CommunicationSubscriber* subscriber = it->second;
-        if (t.type == vrpn_TEXT_NORMAL)
-        {
-            std::string stream = "string:";
-            stream.append(t.message);
-            textStream.push_back("VRPNstring" + stream);
-        }
-        obj.saveDatasToReceivedBuffer(subscriber->getSubject(), textStream, -1, -1);
+        std::string message = "VRPNString:";
+        message.append("'");
+        message.append(t.message);
+        message.append("'");
+        messageStream.push_back(message);
+        std::cout  << " : Text message: " << message << std::endl;
+        //processs see linefunction processmessaage of osc
     }
+    //for (std::map<std::string, CommunicationSubscriber*>::iterator it = subscribersMap.begin(); it != subscribersMap.end(); it++)
+    //{
+    //    CommunicationSubscriber* subscriber = it->second;
+    instance->saveDatasToReceivedBuffer("Mouse0", messageStream, -1, -1);
+    //}
 }
 
 void VRPN_CALLBACK ServerCommunicationVRPN::processAnalogMessage(void *userdata, const vrpn_ANALOGCB a)
 {
     int nbChannels = a.num_channel;
-    std::cout << "Analog : ";
+    ArgumentList analogStream;
+    ServerCommunicationVRPN object;
+    //std::vector<std::string>::iterator it = analogStream.begin();
+    //static std::string subject = *it;
+    //std::cout << "Analog : ";
+    std::map<std::string, CommunicationSubscriber*> subscribersMap = object.getSubscribers();
     for( int i=0; i < a.num_channel; i++ )
     {
-        std::cout << a.channel[i] << " ";
+        std::string stream = std::to_string(a.channel[i]);
+
+
+        analogStream.push_back("VRPNfloat:" + stream);
+        //std::cout << a.channel[i] << " ";
     }
-    std::cout<<std::endl;
+    for (std::map<std::string, CommunicationSubscriber*>::iterator it = subscribersMap.begin(); it != subscribersMap.end(); it++)
+    {
+        CommunicationSubscriber* subscriber = it->second;
+        object.saveDatasToReceivedBuffer(subscriber->getSubject(), analogStream, -1, -1);
+    }
 }
 
 void VRPN_CALLBACK ServerCommunicationVRPN::processButtonMessage(void *userdata, const vrpn_BUTTONCB b)
@@ -251,16 +285,31 @@ void VRPN_CALLBACK ServerCommunicationVRPN::processTrackerMessage(void *userdata
     std::cout << "Tracker '" << z.sensor << "': " << z.pos[0] << "," <<  z.pos[1] << "," << z.pos[2] << std::endl;
 }
 
+/******************************************************************************
+*                                                                             *
+* MESSAGE CONVERSION PART                                                     *
+*                                                                             *
+******************************************************************************/
+
 std::string ServerCommunicationVRPN::getArgumentValue(std::string value)
 {
-    return NULL;
+    std::string stringData = value;
+    std::string returnValue;
+    size_t pos = stringData.find(":"); // That's how ZMQ messages could be. Type:value
+    stringData.erase(0, pos+1);
+    std::remove_copy(stringData.begin(), stringData.end(), std::back_inserter(returnValue), '\'');
+    return returnValue;
 }
 
 std::string ServerCommunicationVRPN::getArgumentType(std::string value)
 {
-    return NULL;
+    std::string stringType = value;
+    size_t pos = stringType.find(":"); // That's how ZMQ messages could be. Type:value
+    if (pos == std::string::npos)
+        return "VRPNString";
+    stringType.erase(pos, stringType.size()-1);
+    return stringType;
 }
 }
 }
 }
-

@@ -9,8 +9,6 @@
 
 #define MAX 1024
 
-struct timeval delay;
-
 namespace sofa
 {
 
@@ -27,7 +25,7 @@ public:
     typedef ServerCommunication Inherited;
     SOFA_CLASS(ServerCommunicationVRPN, Inherited);
 
-    //ServerCommunicationVRPN();
+    ServerCommunicationVRPN();
     virtual ~ServerCommunicationVRPN();
 
     //ArgumentList stringToArgumentList(std::string dataString);
@@ -53,19 +51,17 @@ protected:
     virtual std::string defaultDataType() override;
     /////////////////////////////////////////////////////////////////////////////////
 
-    vrpn_Connection *m_connection;
-    vrpn_Text_Sender *vrpn_text_sender;
-    vrpn_Analog_Server *vrpn_analog_server;
-
     static void VRPN_CALLBACK processTextMessage(void *userdata, const vrpn_TEXTCB t);
     static void VRPN_CALLBACK processAnalogMessage(void *userdata, const vrpn_ANALOGCB a);
     static void VRPN_CALLBACK processButtonMessage(void *userdata, const vrpn_BUTTONCB b);
     static void VRPN_CALLBACK processTrackerMessage(void *userdata, const vrpn_TRACKERCB z);
-
+    vrpn_Connection *m_connection;
+    vrpn_Text_Sender *vrpn_text_sender;
+    vrpn_Analog_Server *vrpn_analog_server;
+    timeval delay;
     void sendVRPNMessage(CommunicationSubscriber *subscriber, std::string argument);
 };
 
 }   /// namespace communication
 }   /// namespace component
 }   /// namespace sofa
-
