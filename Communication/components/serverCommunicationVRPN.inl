@@ -41,7 +41,12 @@ ServerCommunicationVRPN::ServerCommunicationVRPN()
 
 ServerCommunicationVRPN::~ServerCommunicationVRPN()
 {
-    // TODO stop server/client + release objects
+    this->m_running = false;
+
+    if(isVerbose())
+        msg_info(this) << "waiting for timeout";
+
+    Inherited::closeCommunication();
 }
 
 ServerCommunicationVRPN::VRPNDataFactory* ServerCommunicationVRPN::getFactoryInstance()
@@ -55,7 +60,7 @@ ServerCommunicationVRPN::VRPNDataFactory* ServerCommunicationVRPN::getFactoryIns
 void ServerCommunicationVRPN::initTypeFactory()
 {
     getFactoryInstance()->registerCreator("VRPNfloat", new DataCreator<float>());
-    getFactoryInstance()->registerCreator("double", new DataCreator<double>());
+    getFactoryInstance()->registerCreator("VRPNdouble", new DataCreator<double>());
     getFactoryInstance()->registerCreator("int", new DataCreator<int>());
     getFactoryInstance()->registerCreator("VRPNstring", new DataCreator<std::string>());
 
@@ -233,34 +238,73 @@ void VRPN_CALLBACK ServerCommunicationVRPN::processTextMessage(void *userdata, c
     for (std::map<std::string, CommunicationSubscriber*>::iterator it = subscribersMap.begin(); it != subscribersMap.end(); it++)
     {
         CommunicationSubscriber* subscriber = it->second;
-        instance->saveDatasToReceivedBuffer( subscriber->getSubject(), messageStream, -1, -1);
+        instance->saveDatasToReceivedBuffer(subscriber->getSubject(), messageStream, -1, -1);
     }
 }
 
 void VRPN_CALLBACK ServerCommunicationVRPN::processAnalogMessage(void *userdata, const vrpn_ANALOGCB a)
 {
     int nbChannels = a.num_channel;
+
+    ServerCommunicationVRPN* instance = static_cast<ServerCommunicationVRPN*>(userdata);
+    std::map<std::string, CommunicationSubscriber*> subscribersMap = instance->getSubscribers();
+
     ArgumentList analogStream;
-    ServerCommunicationVRPN object;
-    //std::vector<std::string>::iterator it = analogStream.begin();
-    //static std::string subject = *it;
-    //std::cout << "Analog : ";
-    std::map<std::string, CommunicationSubscriber*> subscribersMap = object.getSubscribers();
-    for( int i=0; i < a.num_channel; i++ )
+
+    if (a.num_channel>1)
     {
-        std::string stream = std::to_string(a.channel[i]);
+        int row=0, col=0;
+        try
+        {
+            row = std::stoi(instance->getArgumentValue(analogStream.at(2)));
+            col = std::stoi(instance->getArgumentValue(analogStream.at(3)));
+            if (row < 0 || col < 0)
+                return;
+        } 
+        catch(std::invalid_argument& e)
+        {
+            msg_warning() << "no available conversion for: " << e.what();
+            return;
+        }
+        catch(std::out_of_range& e)
+        {
+            msg_warning() << "out of range : " << e.what();
+            return;
+        }
 
+        if(analogStream.size() == 0)
+        {
+            msg_error() << "argument list size is empty";
+            return;
+        }
 
-        analogStream.push_back("VRPNfloat:" + stream);
-        //std::cout << a.channel[i] << " ";
+        if((unsigned int)row*col != analogStream.size())
+        {
+            msg_error() << "argument list size is != row/cols; " << analogStream.size() << " instead of " << row*col;
+            return;
+        }
+
+        for (std::map<std::string, CommunicationSubscriber*>::iterator it = subscribersMap.begin(); it != subscribersMap.end(); it++)
+        {
+            CommunicationSubscriber* subscriber = it->second;
+            instance->saveDatasToReceivedBuffer(subscriber->getSubject(), analogStream, row, col);
+        }
     }
-    for (std::map<std::string, CommunicationSubscriber*>::iterator it = subscribersMap.begin(); it != subscribersMap.end(); it++)
+
+    else
     {
-        CommunicationSubscriber* subscriber = it->second;
-        object.saveDatasToReceivedBuffer(subscriber->getSubject(), analogStream, -1, -1);
+        std::string stream = "VRPNdouble:";
+        stream.append(std::to_string(a.channel[0]));
+        analogStream.push_back(stream);
+        std::cout << stream << std::endl;
+
+        for (std::map<std::string, CommunicationSubscriber*>::iterator it = subscribersMap.begin(); it != subscribersMap.end(); it++)
+        {
+            CommunicationSubscriber* subscriber = it->second;
+            instance->saveDatasToReceivedBuffer(subscriber->getSubject(), analogStream, -1, -1);
+        }
     }
 }
-
 void VRPN_CALLBACK ServerCommunicationVRPN::processButtonMessage(void *userdata, const vrpn_BUTTONCB b)
 {
     std::cout << "Button '" << b.button << "': " << b.state << std::endl;
@@ -275,7 +319,7 @@ std::string ServerCommunicationVRPN::getArgumentValue(std::string value)
 {
     std::string stringData = value;
     std::string returnValue;
-    size_t pos = stringData.find(":"); // That's how ZMQ messages could be. Type:value
+    size_t pos = stringData.find(":"); // That's how VRPN messages could be. Type:value
     stringData.erase(0, pos+1);
     std::remove_copy(stringData.begin(), stringData.end(), std::back_inserter(returnValue), '\'');
     return returnValue;
@@ -284,7 +328,7 @@ std::string ServerCommunicationVRPN::getArgumentValue(std::string value)
 std::string ServerCommunicationVRPN::getArgumentType(std::string value)
 {
     std::string stringType = value;
-    size_t pos = stringType.find(":"); // That's how ZMQ messages could be. Type:value
+    size_t pos = stringType.find(":"); // That's how VRPN messages could be. Type:value
     if (pos == std::string::npos)
         return "VRPNString";
     stringType.erase(pos, stringType.size()-1);
