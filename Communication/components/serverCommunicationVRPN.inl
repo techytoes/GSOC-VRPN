@@ -64,9 +64,9 @@ void ServerCommunicationVRPN::initTypeFactory()
     getFactoryInstance()->registerCreator("int", new DataCreator<int>());
     getFactoryInstance()->registerCreator("VRPNstring", new DataCreator<std::string>());
 
-    getFactoryInstance()->registerCreator("matrixfloat", new DataCreator<FullMatrix<float>>());
-    getFactoryInstance()->registerCreator("matrixdouble", new DataCreator<FullMatrix<double>>());
-    getFactoryInstance()->registerCreator("matrixint", new DataCreator<FullMatrix<int>>());
+    getFactoryInstance()->registerCreator("matrixVRPNfloat", new DataCreator<FullMatrix<float>>());
+    getFactoryInstance()->registerCreator("matrixVRPNdouble", new DataCreator<FullMatrix<double>>());
+    getFactoryInstance()->registerCreator("matrixVRPNint", new DataCreator<FullMatrix<int>>());
 }
 
 std::string ServerCommunicationVRPN::defaultDataType()
@@ -196,7 +196,7 @@ void ServerCommunicationVRPN::receiveData()
 
         //Receiving Analog via VRPN
         vrpn_Analog_Remote *vrpnAnalog = new vrpn_Analog_Remote(device);
-        vrpnAnalog->register_change_handler( (void*)subscriber->getSubject().c_str(), processAnalogMessage);
+        vrpnAnalog->register_change_handler( (void*) this, processAnalogMessage);
         receivers.push_back(vrpnAnalog);
 
         //Receiving Button via VRPN
@@ -234,11 +234,11 @@ void VRPN_CALLBACK ServerCommunicationVRPN::processTextMessage(void *userdata, c
         message.append("'");
         messageStream.push_back(message);
         std::cout  << " : Text message: " << message << std::endl;
-    }
-    for (std::map<std::string, CommunicationSubscriber*>::iterator it = subscribersMap.begin(); it != subscribersMap.end(); it++)
-    {
-        CommunicationSubscriber* subscriber = it->second;
-        instance->saveDatasToReceivedBuffer(subscriber->getSubject(), messageStream, -1, -1);
+        for (std::map<std::string, CommunicationSubscriber*>::iterator it = subscribersMap.begin(); it != subscribersMap.end(); it++)
+        {
+            CommunicationSubscriber* subscriber = it->second;
+            instance->saveDatasToReceivedBuffer(subscriber->getSubject(), messageStream, -1, -1);
+        }
     }
 }
 
@@ -255,32 +255,39 @@ void VRPN_CALLBACK ServerCommunicationVRPN::processAnalogMessage(void *userdata,
     {
         int row=0, col=0;
         try
-        {
-            row = std::stoi(instance->getArgumentValue(analogStream.at(2)));
-            col = std::stoi(instance->getArgumentValue(analogStream.at(3)));
+        {   // Matrix will have a single row but the number of columns depends on number of channels 
+            row = 1;
+            col = a.num_channel;
             if (row < 0 || col < 0)
                 return;
-        } 
+        }
         catch(std::invalid_argument& e)
         {
-            msg_warning() << "no available conversion for: " << e.what();
+            msg_warning(instance) << "no available conversion for: " << e.what();
             return;
         }
         catch(std::out_of_range& e)
         {
-            msg_warning() << "out of range : " << e.what();
+            msg_warning(instance) << "out of range : " << e.what();
             return;
+        }
+
+        for (int i = 0; i < a.num_channel; i++)
+        {
+            std::string stream = "VRPNdouble:";
+            stream.append(std::to_string(a.channel[i]));
+            analogStream.push_back(stream);
         }
 
         if(analogStream.size() == 0)
         {
-            msg_error() << "argument list size is empty";
+            msg_error(instance) << "argument list size is empty";
             return;
         }
 
         if((unsigned int)row*col != analogStream.size())
         {
-            msg_error() << "argument list size is != row/cols; " << analogStream.size() << " instead of " << row*col;
+            msg_error(instance) << "argument list size is != row/cols; " << analogStream.size() << " instead of " << row*col;
             return;
         }
 
