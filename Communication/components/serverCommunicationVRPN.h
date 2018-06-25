@@ -44,6 +44,10 @@ public:
     //void setTimeout(int timeout);
 
 protected:
+    vrpn_Connection *m_connection;
+    vrpn_Text_Sender *vrpn_text_sender;
+    vrpn_Analog_Server *vrpn_analog_server;
+    timeval delay;
 
     //////////////////////////////// Inherited from ServerCommunication /////////////////////////////////
     virtual void sendData() override;
@@ -55,11 +59,7 @@ protected:
     static void VRPN_CALLBACK processAnalogMessage(void *userdata, const vrpn_ANALOGCB a);
     static void VRPN_CALLBACK processButtonMessage(void *userdata, const vrpn_BUTTONCB b);
     static void VRPN_CALLBACK processTrackerMessage(void *userdata, const vrpn_TRACKERCB z);
-    vrpn_Connection *m_connection;
-    vrpn_Text_Sender *vrpn_text_sender;
-    vrpn_Analog_Server *vrpn_analog_server;
-    timeval delay;
-    void sendVRPNMessage(CommunicationSubscriber *subscriber, std::string argument);
+    void createVRPNMessage(CommunicationSubscriber *subscriber, std::string argument);
 };
 
 }   /// namespace communication

@@ -115,7 +115,7 @@ void ServerCommunicationVRPN::sendData()
             try
             {
                 for (ArgumentList::iterator itArgument = argumentList.begin(); itArgument != argumentList.end(); itArgument++ )
-                    sendVRPNMessage(subscriber, *itArgument);
+                    createVRPNMessage(subscriber, *itArgument);
             } catch(const std::exception& e) {
                 if (isVerbose())
                     msg_info("ServerCommunicationVRPN") << e.what();
@@ -125,7 +125,7 @@ void ServerCommunicationVRPN::sendData()
     }
 }
 
-void ServerCommunicationVRPN::sendVRPNMessage(CommunicationSubscriber* subscriber, std::string argument)
+void ServerCommunicationVRPN::createVRPNMessage(CommunicationSubscriber* subscriber, std::string argument)
 {
     std::stringstream messageStr;
     BaseData* data = fetchDataFromSenderBuffer(subscriber, argument);
