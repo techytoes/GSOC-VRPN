@@ -272,11 +272,11 @@ void VRPN_CALLBACK ServerCommunicationVRPN::processAnalogMessage(void *userdata,
             return;
         }
 
-        for (int i = 0; i < a.num_channel; i++)
+        for (int i = 0; i < col; i++)
         {
             std::string stream = "VRPNdouble:";
             stream.append(std::to_string(a.channel[i]));
-            analogStream.push_back(stream);
+            analogStream.push_back(stream + ",");
         }
 
         if(analogStream.size() == 0)
