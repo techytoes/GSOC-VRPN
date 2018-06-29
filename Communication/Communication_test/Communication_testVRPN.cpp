@@ -180,6 +180,70 @@ public:
         root->init(ExecParams::defaultInstance()) ;
     }
 
+    void checkSendVRPN()
+    {
+        std::stringstream scene1 ;
+        scene1 <<
+                  "<?xml version='1.0' ?>                                                       \n"
+                  "<Node name='root'>                                                           \n"
+                  "   <DefaultAnimationLoop/>                                                   \n"
+                  "   <RequiredPlugin name='Communication' />                                   \n"
+                  "   <ServerCommunicationVRPN name='vrpnSender' job='sender' port='6000'  refreshRate='1000'/> \n"
+                  "   <CommunicationSubscriber name='sub1' communication='@vrpnSender' subject='/test' target='@vrpnSender' datas='x'/>"
+                  "</Node>                                                                      \n";
+
+        Node::SPtr root = SceneLoaderXML::loadFromMemory ("testscene", scene1.str().c_str(), scene1.str().size()) ;
+        root->init(ExecParams::defaultInstance()) ;
+
+        std::future<void> future = std::async(std::launch::async, [](){
+            //************** SOmething coming here *****************//
+        });
+
+        for( int i = 0; i < 10; i++ )
+            sofa::simulation::getSimulation()->animate(root.get(),0.01);
+
+        std::future_status status;
+        status = future.wait_for(std::chrono::seconds(3));
+        EXPECT_EQ(status, std::future_status::ready);
+    }
+
+    void checkReceiveVRPN()
+    {
+        std::stringstream scene1 ;
+        scene1 <<
+                  "<?xml version='1.0' ?>                                                       \n"
+                  "<Node name='root'>                                                           \n"
+                  "   <DefaultAnimationLoop/>                                                   \n"
+                  "   <RequiredPlugin name='Communication' />                                   \n"
+                  "   <ServerCommunicationVRPN name='receiver' job='receiver' port='6000' pattern='publish/subscribe'/> \n"
+                  "   <CommunicationSubscriber name='subSender' communication='@receiver' subject='/test' target='@receiver' datas='x'/>"
+                  "</Node>                                                                      \n";
+
+        Node::SPtr root = SceneLoaderXML::loadFromMemory ("testscene", scene1.str().c_str(), scene1.str().size()) ;
+        root->init(ExecParams::defaultInstance());
+        ServerCommunication* aServerCommunicationVRPN = dynamic_cast<ServerCommunication*>(root->getObject("receiver"));
+        root->setAnimate(true);
+
+        //************** SOmething coming here *****************//
+
+        // stop the communication loop and run animation. This will force the use of buffers
+        aServerCommunicationVRPN->setRunning(false);
+        for(unsigned int i=0; i<10; i++)
+            sofa::simulation::getSimulation()->animate(root.get(), 0.01);
+
+        Base::MapData dataMap = aServerCommunicationVRPN->getDataAliases();
+        Base::MapData::const_iterator itData = dataMap.find("x");
+        BaseData* data;
+
+        EXPECT_TRUE(itData != dataMap.end());
+        if (itData != dataMap.end())
+        {
+            data = itData->second;
+            EXPECT_NE(data, nullptr) ;
+            EXPECT_STRCASENE(data->getValueString().c_str(), "");
+        }
+    }
+
     void checkSendReceiveVRPN()
     {
 
@@ -237,6 +301,14 @@ TEST_F(Communication_testVRPN, checkArgumentCreation) {
 
 TEST_F(Communication_testVRPN, checkCreationDestruction) {
     ASSERT_NO_THROW(this->checkCreationDestruction()) ;
+}
+
+TEST_F(Communication_testVRPN, checkSendVRPN) {
+    ASSERT_NO_THROW(this->checkSendVRPN()) ;
+}
+
+TEST_F(Communication_testVRPN, checkReceiveVRPN) {
+    ASSERT_NO_THROW(this->checkReceiveVRPN()) ;
 }
 
 TEST_F(Communication_testVRPN, checkSendReceiveVRPN) {
