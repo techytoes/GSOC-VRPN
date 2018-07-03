@@ -324,10 +324,6 @@ void VRPN_CALLBACK ServerCommunicationVRPN::processAnalogMessage(void *userdata,
         }
     }
 }
-void VRPN_CALLBACK ServerCommunicationVRPN::processButtonMessage(void *userdata, const vrpn_BUTTONCB b)
-{
-    std::cout << "Button '" << b.button << "': " << b.state << std::endl;
-}
 
 void VRPN_CALLBACK ServerCommunicationVRPN::processTrackerMessage(void *userdata, const vrpn_TRACKERCB z)
 {
