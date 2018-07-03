@@ -222,7 +222,6 @@ void ServerCommunicationVRPN::receiveData()
         receivers.push_back(vrpnTracker);
     }
 
-
     while(this->m_running)
     {
         for(auto rec : receivers )
@@ -330,18 +329,49 @@ void VRPN_CALLBACK ServerCommunicationVRPN::processTrackerMessage(void *userdata
     ServerCommunicationVRPN* instance = static_cast<ServerCommunicationVRPN*>(userdata);
     std::map<std::string, CommunicationSubscriber*> subscribersMap = instance->getSubscribers();
     ArgumentList trackerStream;
+    int row, col;
 
-    std::string stream = "VRPNfloat:";
-    stream.append(std::to_string(z.pos[0]));
-    stream.append(std::to_string(z.pos[1]));
-    stream.append(std::to_string(z.pos[2]));
-    trackerStream.push_back(stream);
-    std::cout << stream << std::endl;
+    try
+    {   // Matrix will have a single row but the number of columns will be 3.
+        row = 1;
+        col = 3;
+        if (row < 0 || col < 0)
+            return;
+    }
+    catch(std::invalid_argument& e)
+    {
+        msg_warning(instance) << "no available conversion for: " << e.what();
+        return;
+    }
+    catch(std::out_of_range& e)
+    {
+        msg_warning(instance) << "out of range : " << e.what();
+        return;
+    }
+
+    for (int i = 0; i < col; i++)
+    {
+        std::string stream = "VRPNdouble:";
+        stream.append(std::to_string(z.pos[i]));
+        trackerStream.push_back(stream);
+    }
+
+    if(trackerStream.size() == 0)
+    {
+        msg_error(instance) << "argument list size is empty";
+        return;
+    }
+
+    if((unsigned int)row*col != trackerStream.size())
+    {
+        msg_error(instance) << "argument list size is != row/cols; " << trackerStream.size() << " instead of " << row*col;
+        return;
+    }
 
     for (std::map<std::string, CommunicationSubscriber*>::iterator it = subscribersMap.begin(); it != subscribersMap.end(); it++)
     {
         CommunicationSubscriber* subscriber = it->second;
-        instance->saveDatasToReceivedBuffer(subscriber->getSubject(), trackerStream, -1, -1);
+        instance->saveDatasToReceivedBuffer(subscriber->getSubject(), trackerStream, row, col);
     }
 }
 
@@ -364,6 +394,6 @@ std::string ServerCommunicationVRPN::getArgumentType(std::string value)
     stringType.erase(pos, stringType.size()-1);
     return stringType;
 }
-}
-}
-}
+}   //communication
+}   //component
+}   //sofa
