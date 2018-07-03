@@ -98,7 +98,7 @@ void ServerCommunicationVRPN::sendData()
         const char *device = strTestText.c_str();
         vrpn_text_sender = new vrpn_Text_Sender(device, m_connection);
         vrpn_analog_server = new vrpn_Analog_Server(device, m_connection);
-
+        vrpn_tracker_server = new vrpn_Tracker_Server(device, m_connection);
     }
 
     while (!m_connection->connected() && this->m_running)
@@ -136,6 +136,7 @@ void ServerCommunicationVRPN::createVRPNMessage(CommunicationSubscriber* subscri
 
     delay.tv_sec = 0L;
     delay.tv_usec = 0L;
+    angle += 0.001f;
 
     if (!typeinfo->Container())
     {
@@ -158,6 +159,22 @@ void ServerCommunicationVRPN::createVRPNMessage(CommunicationSubscriber* subscri
 
             vrpn_analog_server->report_changes();
         }
+
+        if(vrpn_tracker_server)
+        {   //Position of Tracker
+            pos[0] = sin ( angle );
+            pos[1] = stof (data->getValueString());
+            pos[2] = stof (data->getValueString());
+
+            //Orientation of Tracker
+            for(int i=0; i<4; i++)
+            {
+                d_quat[i] = stof (data->getValueString());
+            }
+
+            vrpn_tracker_server->report_pose(sensor, delay, pos, d_quat, class_of_service);
+        }
+
     }
 
     delete data;
@@ -255,7 +272,7 @@ void VRPN_CALLBACK ServerCommunicationVRPN::processAnalogMessage(void *userdata,
     {
         int row=0, col=0;
         try
-        {   // Matrix will have a single row but the number of columns depends on number of channels 
+        {   // Matrix will have a single row but the number of columns depends on number of channels
             row = 1;
             col = a.num_channel;
             if (row < 0 || col < 0)
@@ -272,11 +289,11 @@ void VRPN_CALLBACK ServerCommunicationVRPN::processAnalogMessage(void *userdata,
             return;
         }
 
-        for (int i = 0; i < col; i++)
+        for (int i = 0; i < a.num_channel; i++)
         {
             std::string stream = "VRPNdouble:";
             stream.append(std::to_string(a.channel[i]));
-            analogStream.push_back(stream + ",");
+            analogStream.push_back(stream);
         }
 
         if(analogStream.size() == 0)
