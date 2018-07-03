@@ -218,7 +218,7 @@ void ServerCommunicationVRPN::receiveData()
 
         //Receiving Tracker via VRPN
         vrpn_Tracker_Remote *vrpnTracker = new vrpn_Tracker_Remote(device);
-        vrpnTracker->register_change_handler( (void*)subscriber->getSubject().c_str(), processTrackerMessage);
+        vrpnTracker->register_change_handler( (void*) this, processTrackerMessage);
         receivers.push_back(vrpnTracker);
     }
 
@@ -327,7 +327,22 @@ void VRPN_CALLBACK ServerCommunicationVRPN::processAnalogMessage(void *userdata,
 
 void VRPN_CALLBACK ServerCommunicationVRPN::processTrackerMessage(void *userdata, const vrpn_TRACKERCB z)
 {
-    std::cout << "Tracker '" << z.sensor << "': " << z.pos[0] << "," <<  z.pos[1] << "," << z.pos[2] << std::endl;
+    ServerCommunicationVRPN* instance = static_cast<ServerCommunicationVRPN*>(userdata);
+    std::map<std::string, CommunicationSubscriber*> subscribersMap = instance->getSubscribers();
+    ArgumentList trackerStream;
+
+    std::string stream = "VRPNfloat:";
+    stream.append(std::to_string(z.pos[0]));
+    stream.append(std::to_string(z.pos[1]));
+    stream.append(std::to_string(z.pos[2]));
+    trackerStream.push_back(stream);
+    std::cout << stream << std::endl;
+
+    for (std::map<std::string, CommunicationSubscriber*>::iterator it = subscribersMap.begin(); it != subscribersMap.end(); it++)
+    {
+        CommunicationSubscriber* subscriber = it->second;
+        instance->saveDatasToReceivedBuffer(subscriber->getSubject(), trackerStream, -1, -1);
+    }
 }
 
 std::string ServerCommunicationVRPN::getArgumentValue(std::string value)
