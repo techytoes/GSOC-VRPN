@@ -216,11 +216,6 @@ void ServerCommunicationVRPN::receiveData()
         vrpnAnalog->register_change_handler( (void*) this, processAnalogMessage);
         receivers.push_back(vrpnAnalog);
 
-        //Receiving Button via VRPN
-        vrpn_Button_Remote *vrpnButton = new vrpn_Button_Remote(device);
-        vrpnButton->register_change_handler( (void*)subscriber->getSubject().c_str(), processButtonMessage);
-        receivers.push_back(vrpnButton);
-
         //Receiving Tracker via VRPN
         vrpn_Tracker_Remote *vrpnTracker = new vrpn_Tracker_Remote(device);
         vrpnTracker->register_change_handler( (void*)subscriber->getSubject().c_str(), processTrackerMessage);
