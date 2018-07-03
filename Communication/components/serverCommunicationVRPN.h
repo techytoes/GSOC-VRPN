@@ -39,15 +39,17 @@ public:
     virtual std::string getArgumentType(std::string value) override;
     virtual std::string getArgumentValue(std::string value) override;
 
-    //Data<helper::OptionsGroup>  d_pattern;
-    //int getTimeout() const;
-    //void setTimeout(int timeout);
-
 protected:
     vrpn_Connection *m_connection;
     vrpn_Text_Sender *vrpn_text_sender;
     vrpn_Analog_Server *vrpn_analog_server;
+    vrpn_Tracker_Server *vrpn_tracker_server;
     timeval delay;
+
+    float angle = 0;
+    vrpn_float64 pos[3], d_quat[4];
+    const vrpn_uint32 class_of_service = vrpn_CONNECTION_LOW_LATENCY;
+    int sensor = 0;
 
     //////////////////////////////// Inherited from ServerCommunication /////////////////////////////////
     virtual void sendData() override;
