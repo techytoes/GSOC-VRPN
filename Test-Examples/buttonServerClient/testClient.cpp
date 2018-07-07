@@ -10,7 +10,7 @@ void VRPN_CALLBACK handle_button( void* userData, const vrpn_BUTTONCB b )
 
 int main(int argc, char* argv[])
 {
-    vrpn_Button_Remote* vrpnButton = new vrpn_Button_Remote("Mouse0@localhost");
+    vrpn_Button_Remote* vrpnButton = new vrpn_Button_Remote("testing@localhost");
 
     vrpnButton->register_change_handler( 0, handle_button );
 
