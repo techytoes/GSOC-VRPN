@@ -40,7 +40,7 @@ int main (int argc, char ** argv) {
   struct timeval delay;
 
   c = vrpn_create_server_connection();
-  ats = new vrpn_Analog_Server ("Mouse0@localhost", c);
+  ats = new vrpn_Analog_Server ("testing@localhost", c);
   ats->setNumChannels(2);
 
   delay.tv_sec = 0L;

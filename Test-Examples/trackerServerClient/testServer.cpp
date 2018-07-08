@@ -34,7 +34,7 @@ int main(int argc, char const *argv[])
     struct timeval delay;
 
     c = vrpn_create_server_connection();
-    tracker = new vrpn_Tracker_Server ("Tracker0@localhost", c);
+    tracker = new vrpn_Tracker_Server ("testing@localhost", c);
 
     delay.tv_sec = 0L;
     delay.tv_usec = 0L;

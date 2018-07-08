@@ -20,7 +20,7 @@ void VRPN_CALLBACK handle_analog( void* userData, const vrpn_ANALOGCB a )
 
 int main(int argc, char* argv[])
 {
- vrpn_Analog_Remote* vrpnAnalog = new vrpn_Analog_Remote("Mouse0@localhost");
+ vrpn_Analog_Remote* vrpnAnalog = new vrpn_Analog_Remote("testing@localhost");
 
  vrpnAnalog->register_change_handler( 0, handle_analog );
 

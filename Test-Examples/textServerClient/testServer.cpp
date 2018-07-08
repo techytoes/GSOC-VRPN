@@ -17,7 +17,7 @@ int main ()
 {
 	char msg[MAX];
 	vrpn_Connection *sc = vrpn_create_server_connection();
-	vrpn_Text_Sender *s = new vrpn_Text_Sender("Mouse0@localhost", sc);
+	vrpn_Text_Sender *s = new vrpn_Text_Sender("testing@localhost", sc);
 
 	while (1) {
 		while (!sc->connected()) {  // wait until we've got a connection

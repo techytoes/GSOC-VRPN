@@ -18,7 +18,7 @@ void VRPN_CALLBACK handle_text(void *userdata, const vrpn_TEXTCB t)
 int main(int argc, char* argv[])
 {   
     //To recieve text from server
-    vrpn_Text_Receiver *text = new vrpn_Text_Receiver("Mouse0@localhost");
+    vrpn_Text_Receiver *text = new vrpn_Text_Receiver("testing@localhost");
 
     text->register_message_handler( 0, handle_text );
 

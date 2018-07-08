@@ -10,7 +10,7 @@ void VRPN_CALLBACK handle_tracker(void* userData, const vrpn_TRACKERCB t )
 
 int main(int argc, char* argv[])
 {
-    vrpn_Tracker_Remote* vrpnTracker = new vrpn_Tracker_Remote( "Tracker0@localhost");
+    vrpn_Tracker_Remote* vrpnTracker = new vrpn_Tracker_Remote( "testing@localhost");
     vrpnTracker->register_change_handler( 0, handle_tracker );
 
     while(1)
