@@ -18,7 +18,7 @@ SOFA_DECL_CLASS(ServerCommunicationVRPN)
 
 int ServerCommunicationVRPNClass = sofa::core::RegisterObject("Communication component using VRPN protocol").add<ServerCommunicationVRPN>();
 
-}   //namespace controller
+}   //namespace communication
 }   //namespace component
 }   //namespace sofa
 
