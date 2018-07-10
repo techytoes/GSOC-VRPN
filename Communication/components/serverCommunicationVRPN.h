@@ -45,11 +45,9 @@ public:
     virtual std::string getArgumentValue(std::string value) override;
 
 protected:
+
     vrpn_Connection *m_connection;
-
     std::map<CommunicationSubscriber*, VrpnSenders> senders;
-
-
 
     //////////////////////////////// Inherited from ServerCommunication /////////////////////////////////
     virtual void sendData() override;
