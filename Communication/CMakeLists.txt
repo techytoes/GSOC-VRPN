@@ -49,9 +49,11 @@ set(EXTRA_FILES
 
     examples/OSC/matrix/Receiver/receiver.scn
 
-    examples/VRPN/primitives/Sender/sender.scn
+    examples/VRPN/primitives/Sender/Sender.scn
+    examples/VRPN/primitives/Receiver/Receiver.scn
 
-    examples/VRPN/primitives/Receiver/receiver.scn
+    examples/VRPN/matrix/Sender/Sender.scn
+    examples/VRPN/matrix/Receiver/Receiver.scn
     )
 
 find_package(SofaFramework REQUIRED)
